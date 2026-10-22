@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router'
+import { formatarPreco, precoValido } from '../utils/formatarPreco'
 
 export default function PaginaProduto({ produtos, onAdicionar }) {
   const { id } = useParams()
@@ -15,8 +16,22 @@ export default function PaginaProduto({ produtos, onAdicionar }) {
     )
   }
 
+  if (!precoValido(produto.price)) {
+    return (
+      <div className="estado-vazio">
+        <p>Produto indisponível no momento.</p>
+        <Link to="/" className="botao botao-secundario">
+          Voltar para a loja
+        </Link>
+      </div>
+    )
+  }
+
   const relacionados = produtos
-    .filter((item) => item.category === produto.category && item.id !== produto.id)
+    .filter(
+      (item) =>
+        item.category === produto.category && item.id !== produto.id && precoValido(item.price)
+    )
     .slice(0, 4)
 
   return (
@@ -37,14 +52,14 @@ export default function PaginaProduto({ produtos, onAdicionar }) {
           <p className="card-avaliacao">
             ★ {produto.rating.rate} <span>({produto.rating.count} avaliações)</span>
           </p>
-          <p className="detalhe-preco">R$ {produto.price.toFixed(2).replace('.', ',')}</p>
+          <p className="detalhe-preco">{formatarPreco(produto.price)}</p>
           <p className="detalhe-descricao">{produto.description}</p>
           <p className="detalhe-estoque">{produto.estoque} unidades disponíveis</p>
 
           <button
             className="botao botao-grande"
             onClick={() => onAdicionar(produto)}
-            disabled={produto.estoque === 0}
+            disabled={produto.estoque === 0 || !precoValido(produto.price)}
           >
             Adicionar ao carrinho
           </button>
@@ -66,8 +81,8 @@ export default function PaginaProduto({ produtos, onAdicionar }) {
               </div>
               <h3 className="card-titulo">{item.title}</h3>
             </Link>
-            <p className="preco">R$ {Number(item.price).toFixed(2).replace('.', ',')}</p>
-            <button className="botao" onClick={() => onAdicionar(item)}>
+            <p className="preco">{formatarPreco(item.price)}</p>
+            <button className="botao" onClick={() => onAdicionar(item)} disabled={!precoValido(item.price)}>
               Adicionar ao carrinho
             </button>
           </article>

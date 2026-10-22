@@ -1,4 +1,4 @@
-import { formatarPreco } from '../utils/formatarPreco'
+import { formatarPreco, precoValido } from '../utils/formatarPreco'
 
 export default function SugestaoItem({ produto, onAdicionar }) {
   return (
@@ -10,7 +10,7 @@ export default function SugestaoItem({ produto, onAdicionar }) {
         <p className="sugestao-titulo">{produto.title}</p>
         <p className="preco preco-pequeno">{formatarPreco(produto.price)}</p>
       </div>
-      <button className="botao botao-pequeno" onClick={() => onAdicionar(produto)}>
+      <button className="botao botao-pequeno" onClick={() => onAdicionar(produto)} disabled={!precoValido(produto.price)}>
         Comprar
       </button>
     </div>

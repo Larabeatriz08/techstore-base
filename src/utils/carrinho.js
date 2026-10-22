@@ -1,8 +1,16 @@
 // O carrinho guarda uma entrada por unidade adicionada.
 // Ex.: duas camisetas iguais = o mesmo produto duas vezes no array.
 
+import { precoValido } from './formatarPreco'
+
 export function calcularTotal(carrinho) {
-  return carrinho.reduce((total, produto) => total + produto.price, 0)
+  return carrinho.reduce((total, produto) => {
+    if (!precoValido(produto?.price)) {
+      return total
+    }
+
+    return total + Number(produto.price)
+  }, 0)
 }
 
 export function agruparItens(carrinho) {
