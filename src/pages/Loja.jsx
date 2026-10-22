@@ -15,7 +15,9 @@ export default function Loja({ produtos, onAdicionar }) {
   const [produtosVisiveis, setProdutosVisiveis] = useState([])
 
   useEffect(() => {
-    const produtosDisponiveis = produtos.filter((produto) => precoValido(produto.price))
+    const produtosDisponiveis = produtos.filter(
+      (produto) => precoValido(produto.price) && produto.estoque > 0
+    )
 
     if (categoria === 'todas') {
       setProdutosVisiveis(produtosDisponiveis)

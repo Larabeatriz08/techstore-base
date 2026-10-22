@@ -1,9 +1,13 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { formatarPreco, precoValido } from '../utils/formatarPreco'
 
-export default function PaginaProduto({ produtos, onAdicionar }) {
+export default function PaginaProduto({ produtos, onAdicionar, onRegistrarEspera }) {
   const { id } = useParams()
   const produto = produtos.find((item) => item.id === id)
+  const [nome, setNome] = useState('')
+  const [email, setEmail] = useState('')
+  const [mensagem, setMensagem] = useState('')
 
   if (!produto) {
     return (
@@ -19,7 +23,7 @@ export default function PaginaProduto({ produtos, onAdicionar }) {
   if (!precoValido(produto.price)) {
     return (
       <div className="estado-vazio">
-        <p>Produto indisponível no momento.</p>
+        <p>Produto indisponível.</p>
         <Link to="/" className="botao botao-secundario">
           Voltar para a loja
         </Link>
@@ -27,12 +31,31 @@ export default function PaginaProduto({ produtos, onAdicionar }) {
     )
   }
 
+  const esgotado = produto.estoque === 0
+
   const relacionados = produtos
     .filter(
       (item) =>
-        item.category === produto.category && item.id !== produto.id && precoValido(item.price)
+        item.category === produto.category &&
+        item.id !== produto.id &&
+        precoValido(item.price) &&
+        item.estoque > 0
     )
     .slice(0, 4)
+
+  function enviarAviso(evento) {
+    evento.preventDefault()
+
+    if (!nome.trim() || !email.trim()) {
+      setMensagem('Preencha nome e e-mail para receber o aviso.')
+      return
+    }
+
+    onRegistrarEspera({ produtoId: produto.id, nome: nome.trim(), email: email.trim() })
+    setNome('')
+    setEmail('')
+    setMensagem('Você foi adicionado à lista de espera. Te avisaremos quando o produto voltar.')
+  }
 
   return (
     <section>
@@ -56,13 +79,42 @@ export default function PaginaProduto({ produtos, onAdicionar }) {
           <p className="detalhe-descricao">{produto.description}</p>
           <p className="detalhe-estoque">{produto.estoque} unidades disponíveis</p>
 
-          <button
-            className="botao botao-grande"
-            onClick={() => onAdicionar(produto)}
-            disabled={produto.estoque === 0 || !precoValido(produto.price)}
-          >
-            Adicionar ao carrinho
-          </button>
+          {esgotado ? (
+            <form onSubmit={enviarAviso} className="form-aviso">
+              <p className="aviso aviso-esgotado">Produto esgotado. Deixe seu nome e e-mail para receber um aviso quando voltar.</p>
+              <div className="campo">
+                <label htmlFor="nome-aviso">Nome</label>
+                <input
+                  id="nome-aviso"
+                  value={nome}
+                  onChange={(evento) => setNome(evento.target.value)}
+                  placeholder="Seu nome"
+                />
+              </div>
+              <div className="campo">
+                <label htmlFor="email-aviso">E-mail</label>
+                <input
+                  id="email-aviso"
+                  type="email"
+                  value={email}
+                  onChange={(evento) => setEmail(evento.target.value)}
+                  placeholder="seu@email.com"
+                />
+              </div>
+              <button className="botao botao-grande" type="submit">
+                Avisar quando chegar
+              </button>
+              {mensagem && <p className="mensagem-cupom">{mensagem}</p>}
+            </form>
+          ) : (
+            <button
+              className="botao botao-grande"
+              onClick={() => onAdicionar(produto)}
+              disabled={!precoValido(produto.price)}
+            >
+              Adicionar ao carrinho
+            </button>
+          )}
 
           <ul className="detalhe-garantias">
             <li>Troca grátis em até 30 dias</li>

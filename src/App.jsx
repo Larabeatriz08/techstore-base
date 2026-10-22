@@ -10,6 +10,8 @@ import Estoque from './pages/Estoque'
 import { buscarProdutos } from './services/produtos'
 import { buscarClientes } from './services/clientes'
 
+const CHAVE_ESPERAS = 'techstore-esperas'
+
 export default function App() {
   const [produtos, setProdutos] = useState([])
   const [carregando, setCarregando] = useState(true)
@@ -17,6 +19,14 @@ export default function App() {
   const [carrinho, setCarrinho] = useState([])
   const [clientes, setClientes] = useState([])
   const [clienteAtualId, setClienteAtualId] = useState(null)
+  const [esperas, setEsperas] = useState(() => {
+    try {
+      const armazenadas = localStorage.getItem(CHAVE_ESPERAS)
+      return armazenadas ? JSON.parse(armazenadas) : []
+    } catch {
+      return []
+    }
+  })
 
   useEffect(() => {
     buscarProdutos()
@@ -29,6 +39,10 @@ export default function App() {
       if (dados.length > 0) setClienteAtualId(dados[0].id)
     })
   }, [])
+
+  useEffect(() => {
+    localStorage.setItem(CHAVE_ESPERAS, JSON.stringify(esperas))
+  }, [esperas])
 
   function adicionarAoCarrinho(produto) {
     setCarrinho(carrinho.concat(produto))
@@ -46,6 +60,18 @@ export default function App() {
         return true
       })
     )
+  }
+
+  function registrarEspera({ produtoId, nome, email }) {
+    const novaEntrada = {
+      id: crypto.randomUUID(),
+      produtoId,
+      nome,
+      email,
+      data: new Date().toISOString(),
+    }
+
+    setEsperas((atual) => [novaEntrada, ...atual])
   }
 
   const clienteAtual = clientes.find((cliente) => cliente.id === clienteAtualId)
@@ -67,7 +93,13 @@ export default function App() {
             />
             <Route
               path="/produto/:id"
-              element={<PaginaProduto produtos={produtos} onAdicionar={adicionarAoCarrinho} />}
+              element={
+                <PaginaProduto
+                  produtos={produtos}
+                  onAdicionar={adicionarAoCarrinho}
+                  onRegistrarEspera={registrarEspera}
+                />
+              }
             />
             <Route
               path="/carrinho"
@@ -81,7 +113,7 @@ export default function App() {
                 />
               }
             />
-            <Route path="/estoque" element={<Estoque produtos={produtos} />} />
+            <Route path="/estoque" element={<Estoque produtos={produtos} esperas={esperas} />} />
           </Routes>
         )}
       </main>
