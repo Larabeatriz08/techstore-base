@@ -1,7 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { calcularTotal } from './carrinho.js'
+import {
+    calcularTotal,
+    calcularValorRestanteParaFreteGratis,
+} from './carrinho.js'
 import { formatarPreco, precoValido } from './formatarPreco.js'
 import { validarCupom } from './cupons.js'
 
@@ -42,4 +45,10 @@ test('validarCupom aceita PRIMEIRACOMPRA apenas para clientes sem pedidos anteri
         valido: true,
         desconto: 0.1,
     })
+})
+
+test('calcularValorRestanteParaFreteGratis considera o valor final da compra', () => {
+    assert.equal(calcularValorRestanteParaFreteGratis(199.9), 0.1)
+    assert.equal(calcularValorRestanteParaFreteGratis(200), 0)
+    assert.equal(calcularValorRestanteParaFreteGratis(250), 0)
 })

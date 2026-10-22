@@ -3,6 +3,8 @@
 
 import { precoValido } from './formatarPreco.js'
 
+export const LIMITE_FRETE_GRATIS = 200
+
 export function calcularTotal(carrinho) {
   return carrinho.reduce((total, produto) => {
     if (!precoValido(produto?.price)) {
@@ -11,6 +13,16 @@ export function calcularTotal(carrinho) {
 
     return total + Number(produto.price)
   }, 0)
+}
+
+export function calcularValorRestanteParaFreteGratis(valorFinal) {
+  const valor = Number(valorFinal ?? 0)
+
+  if (!Number.isFinite(valor)) {
+    return 0
+  }
+
+  return Number(Math.max(LIMITE_FRETE_GRATIS - valor, 0).toFixed(2))
 }
 
 export function agruparItens(carrinho) {
